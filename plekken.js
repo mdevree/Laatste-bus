@@ -61,5 +61,21 @@ const PLEKKEN = [
     coords: [36.7673, 31.3890],
     verhaal: "Schrijf hier een herinnering aan deze plek…",
     foto: ""
+  },
+  {
+    naam: "Rhodos",
+    plaats: "Rhodos, Griekenland",
+    datum: "",
+    coords: [36.4341, 28.2176],
+    verhaal: "Schrijf hier een herinnering aan deze plek…",
+    foto: ""
+  },
+  {
+    naam: "Rode Zee",
+    plaats: "Rode Zee, Egypte",
+    datum: "",
+    coords: [27.2579, 33.8116],
+    verhaal: "Schrijf hier een herinnering aan deze plek…",
+    foto: ""
   }
 ];
