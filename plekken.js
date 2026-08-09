@@ -40,11 +40,11 @@ const PLEKKEN = [
   },
   {
     naam: "Kleve",
-    plaats: "Kleve, Duitsland",
+    plaats: "Forstgarten, Kleve, Duitsland",
     datum: "",
-    coords: [51.7880, 6.1381],
+    coords: [51.7957, 6.1265],
     verhaal: "Schrijf hier een herinnering aan deze plek…",
-    foto: ""
+    foto: "fotos/kleve.jpg"
   },
   {
     naam: "Marmaris",
@@ -61,5 +61,21 @@ const PLEKKEN = [
     coords: [36.7673, 31.3890],
     verhaal: "Schrijf hier een herinnering aan deze plek…",
     foto: ""
+  },
+  {
+    naam: "Rhodos",
+    plaats: "Rhodos, Griekenland",
+    datum: "",
+    coords: [36.4341, 28.2176],
+    verhaal: "Schrijf hier een herinnering aan deze plek…",
+    foto: ""
+  },
+  {
+    naam: "White Island",
+    plaats: "Rode Zee bij Hurghada, Egypte",
+    datum: "",
+    coords: [27.2295, 33.8930],
+    verhaal: "Schrijf hier een herinnering aan deze plek…",
+    foto: "fotos/rode-zee.jpg"
   }
 ];
