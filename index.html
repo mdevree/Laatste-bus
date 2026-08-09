@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arie's laatste bus</title>
+  <meta name="description" content="De plekken waar we Arie hebben meegenomen.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚌</text></svg>">
+
+  <link rel="stylesheet" href="leaflet/leaflet.css">
+
+  <style>
+    :root {
+      --achtergrond: #faf6ef;
+      --kaart-achtergrond: #ffffff;
+      --inkt: #3d3a34;
+      --inkt-zacht: #7d776c;
+      --accent: #4a6151;
+      --accent-warm: #b5714f;
+      --lijn: #e6dfd2;
+      --schaduw: 0 2px 12px rgba(61, 58, 52, 0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--achtergrond);
+      color: var(--inkt);
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1.65;
+    }
+
+    header {
+      text-align: center;
+      padding: 3.5rem 1.25rem 2.5rem;
+    }
+
+    header .busje {
+      font-size: 2.2rem;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: normal;
+      letter-spacing: 0.01em;
+    }
+
+    header .ondertitel {
+      margin-top: 0.75rem;
+      color: var(--inkt-zacht);
+      font-style: italic;
+      font-size: 1.1rem;
+    }
+
+    header .sierlijn {
+      width: 4.5rem;
+      height: 1px;
+      background: var(--accent-warm);
+      border: none;
+      margin: 1.75rem auto 0;
+    }
+
+    main {
+      max-width: 46rem;
+      margin: 0 auto;
+      padding: 0 1.25rem 4rem;
+    }
+
+    #kaart {
+      height: 26rem;
+      border-radius: 10px;
+      box-shadow: var(--schaduw);
+      border: 1px solid var(--lijn);
+      z-index: 0; /* onder de header-tekst blijven bij scrollen */
+    }
+
+    .kaart-hint {
+      text-align: center;
+      color: var(--inkt-zacht);
+      font-size: 0.9rem;
+      font-style: italic;
+      margin-top: 0.75rem;
+    }
+
+    .plekken {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    .plek {
+      background: var(--kaart-achtergrond);
+      border: 1px solid var(--lijn);
+      border-radius: 10px;
+      box-shadow: var(--schaduw);
+      overflow: hidden;
+      scroll-margin-top: 1.25rem;
+    }
+
+    .plek img {
+      width: 100%;
+      max-height: 20rem;
+      object-fit: cover;
+      display: block;
+    }
+
+    .plek .tekst { padding: 1.5rem 1.75rem 1.65rem; }
+
+    .plek .nummer {
+      color: var(--accent-warm);
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .plek h2 {
+      font-weight: normal;
+      font-size: 1.45rem;
+      margin-top: 0.25rem;
+      color: var(--accent);
+    }
+
+    .plek .meta {
+      color: var(--inkt-zacht);
+      font-size: 0.95rem;
+      margin-top: 0.15rem;
+    }
+
+    .plek .verhaal { margin-top: 0.9rem; }
+
+    .plek .verhaal.leeg {
+      color: var(--inkt-zacht);
+      font-style: italic;
+    }
+
+    .plek .toon-op-kaart {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--accent);
+      font-size: 0.9rem;
+      text-decoration: none;
+      border-bottom: 1px solid var(--lijn);
+      cursor: pointer;
+      background: none;
+      border-top: none; border-left: none; border-right: none;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    .plek .toon-op-kaart:hover { border-bottom-color: var(--accent); }
+
+    footer {
+      text-align: center;
+      color: var(--inkt-zacht);
+      font-style: italic;
+      padding: 0 1.25rem 3rem;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      font-family: Georgia, serif;
+    }
+
+    .leaflet-popup-content b { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="busje" aria-hidden="true">🚌</span>
+    <h1>Arie&rsquo;s laatste bus</h1>
+    <p class="ondertitel">De plekken waar we Arie hebben meegenomen</p>
+    <hr class="sierlijn">
+  </header>
+
+  <main>
+    <div id="kaart" aria-label="Kaart met de plekken waar Arie is uitgestrooid"></div>
+    <p class="kaart-hint">Tik op een stip om te zien welke plek het is.</p>
+
+    <section class="plekken" id="plekken"></section>
+  </main>
+
+  <footer>
+    <p>Voor Arie &mdash; overal met ons mee.</p>
+  </footer>
+
+  <script src="leaflet/leaflet.js"></script>
+  <script src="plekken.js"></script>
+  <script>
+    // ---- Kaart (alleen als Leaflet geladen is; de kaartjes doen het altijd) ----
+    let kaart = null;
+    const markers = [];
+    if (typeof L !== 'undefined') {
+      kaart = L.map('kaart', { scrollWheelZoom: false });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(kaart);
+
+      PLEKKEN.forEach((plek, i) => {
+        const marker = L.marker(plek.coords).addTo(kaart);
+        marker.bindPopup(
+          `<b>${plek.naam}</b><br>${plek.plaats}` +
+          (plek.datum ? `<br><i>${plek.datum}</i>` : '')
+        );
+        marker.on('click', () => {
+          const kaartje = document.getElementById('plek-' + i);
+          if (kaartje) kaartje.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        markers.push(marker);
+      });
+
+      // Zoom zó dat alle plekken in beeld zijn
+      if (PLEKKEN.length > 0) {
+        kaart.fitBounds(L.latLngBounds(PLEKKEN.map(p => p.coords)), { padding: [35, 35] });
+      } else {
+        kaart.setView([51.0, 5.5], 6);
+      }
+    } else {
+      document.getElementById('kaart').style.display = 'none';
+      document.querySelector('.kaart-hint').textContent =
+        'De kaart kon niet geladen worden — de plekken staan hieronder.';
+    }
+
+    // ---- Kaartjes per plek ----
+    const container = document.getElementById('plekken');
+    PLEKKEN.forEach((plek, i) => {
+      const artikel = document.createElement('article');
+      artikel.className = 'plek';
+      artikel.id = 'plek-' + i;
+
+      if (plek.foto) {
+        const img = document.createElement('img');
+        img.src = plek.foto;
+        img.alt = plek.naam;
+        img.loading = 'lazy';
+        // Als de foto (nog) niet bestaat, gewoon zonder foto tonen
+        img.onerror = () => img.remove();
+        artikel.appendChild(img);
+      }
+
+      const tekst = document.createElement('div');
+      tekst.className = 'tekst';
+
+      const nummer = document.createElement('p');
+      nummer.className = 'nummer';
+      nummer.textContent = 'Plek ' + (i + 1);
+      tekst.appendChild(nummer);
+
+      const kop = document.createElement('h2');
+      kop.textContent = plek.naam;
+      tekst.appendChild(kop);
+
+      const meta = document.createElement('p');
+      meta.className = 'meta';
+      meta.textContent = plek.plaats + (plek.datum ? ' · ' + plek.datum : '');
+      tekst.appendChild(meta);
+
+      if (plek.verhaal) {
+        const verhaal = document.createElement('p');
+        const isPlaceholder = plek.verhaal.startsWith('Schrijf hier');
+        verhaal.className = 'verhaal' + (isPlaceholder ? ' leeg' : '');
+        verhaal.textContent = plek.verhaal;
+        tekst.appendChild(verhaal);
+      }
+
+      if (kaart) {
+        const knop = document.createElement('button');
+        knop.className = 'toon-op-kaart';
+        knop.textContent = 'Toon op de kaart';
+        knop.addEventListener('click', () => {
+          document.getElementById('kaart').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          kaart.flyTo(plek.coords, 11, { duration: 1.2 });
+          markers[i].openPopup();
+        });
+        tekst.appendChild(knop);
+      }
+
+      artikel.appendChild(tekst);
+      container.appendChild(artikel);
+    });
+  </script>
+</body>
+</html>
