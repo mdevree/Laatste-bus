@@ -71,8 +71,8 @@ const PLEKKEN = [
     foto: ""
   },
   {
-    naam: "Rode Zee",
-    plaats: "Witte zandbank in zee bij Hurghada, Egypte",
+    naam: "White Island",
+    plaats: "Rode Zee bij Hurghada, Egypte",
     datum: "",
     coords: [27.2295, 33.8930],
     verhaal: "Schrijf hier een herinnering aan deze plek…",
