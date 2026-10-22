@@ -77,5 +77,13 @@ const PLEKKEN = [
     coords: [27.2295, 33.8930],
     verhaal: "Schrijf hier een herinnering aan deze plek…",
     foto: "fotos/rode-zee.jpg"
+  },
+  {
+    naam: "Camping Müller-See",
+    plaats: "Riegel am Kaiserstuhl, Duitsland",
+    datum: "",
+    coords: [48.1645, 7.7417],
+    verhaal: "Schrijf hier een herinnering aan deze plek…",
+    foto: "fotos/camping-muller-see.jpg"
   }
 ];
